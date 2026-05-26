@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="icon" href="src/assets/icon/favicon.ico" />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet">
+        <title>ROG_OMNI_INTERNATIONAL</title>
+       
+    </head>
+    <body>
+        <div id="StartBtnDiv">
+            <button  id="StartBtn" >Click to Start</button>
+        </div>
+
+        <div id="loading-screen">
+            <img id="logo" src="src/assets/icon/rog_logo.png" alt="Logo" style="width: 99px" />
+            <p id="loading-progress">0%</p>
+            <progress id="loading-bar" value="0" max="100" style="width: 120px"></progress>
+            <!-- 這一行 -->
+            
+            <!-- 這一行 -->
+        </div>
+        <div id="html-element">
+        <img id="logoicon" src="src/assets/icon/rog_logo.png" alt="logo" />
+        <!-- #region  對話框 -->
+        <div class="chat-container" id="chat-container">
+        </div>
+        <!-- #endregion -->
+
+
+        <!-- #endregion -->
+
+        <div id="for-micUI">
+            <canvas id="waveform" ></canvas>
+
+   
+            <div id="PresstoTalk">
+            <p id="ChatText">Press To Talk</p>
+            <button id ="PresstoTalkbutton" >
+                <img id = "button-img" src="src/assets/icon/icon_push_red.png" alt="mic"  ></img>
+            </button>
+            </div>
+        </div>
+
+        <div id="status-container" style="display: none">
+                    <div class="status-row" id = "STTTimeRow">
+                        <span class="label">STT :</span>
+                        <span id="stt-time" class="time-value">0</span>
+                        <span  class="time-value"> ms</span>
+                    </div>
+
+                    <div class="status-row" id = "LLMTimeRow">
+                        <span class="label">LLM :</span>
+                        <span id="llm-time" class="time-value">0</span>
+                        <span  class="time-value"> ms</span>
+                    </div>
+
+                    <div class="status-row" id = "TTSTimeRow">
+                        <span class="label">TTS :</span>
+                        <span id="tts-time" class="time-value">0</span>
+                        <span  class="time-value"> ms</span>
+                    </div>
+        </div>
+
+
+        </div>
+
+
+        <div id="app" style="display: none">
+            <div id="background"></div>
+            <div id="player-container">
+
+                
+                <video id="video-player" autoplay loop muted playsinline webkit-playsinline></video>
+
+
+
+            </div>
+            <div id="sidebar" class="hidden">
+                <div class="list-container">
+                    <h3>BG List</h3>
+                    <ul id="background-list"></ul>
+                </div>
+                <div class="list-container">
+                    <h3>Video List</h3>
+                    <ul id="video-list"></ul>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <script type="module" src="/src/main.ts"></script>
+
+
+    </body>
+</html>

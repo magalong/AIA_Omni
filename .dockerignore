@@ -1,0 +1,10 @@
+node_modules
+omni-api/node_modules
+omni-api/dist
+dist
+.git
+.env
+.env.*
+!.env.example
+*.log
+123/
