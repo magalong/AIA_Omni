@@ -1,8 +1,8 @@
 import './style.css';
 // @ts-ignore
 import {ShareData , Coordinator} from './Coordinator.js';
-import push_black from './assets/icon/icon_push_black_red.png';
-import push from './assets/icon/icon_push_red.png';
+const push_black = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/icon/icon_push_black_red.png';
+const push = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/icon/icon_push_red.png';
 
 
 
@@ -115,13 +115,6 @@ if (StartBtn) {
         }
 
 
-        //延遲開始暖場表演
-        setTimeout(() => 
-        {
-            console.log("開始開場白語音");
-            _Coordinator.StartAutoTTSTimer(0 , 1);
-            
-        }, 1000);
 
         
     });

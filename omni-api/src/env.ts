@@ -29,6 +29,10 @@ export const env = {
   DASHSCOPE_TTS_URL:
     process.env.DASHSCOPE_TTS_URL ??
     'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+  // Dify 聊天 API（雲端版預設；自架請改成你的網域 + /v1/chat-messages）
+  DIFY_API_KEY: process.env.DIFY_API_KEY ?? '',
+  DIFY_API_URL:
+    process.env.DIFY_API_URL ?? 'https://api.dify.ai/v1/chat-messages',
   // 連線閒置（無音訊）超過此秒數即關閉
   WS_IDLE_TIMEOUT_SEC: Number(process.env.WS_IDLE_TIMEOUT_SEC ?? 120),
   // 心跳秒數

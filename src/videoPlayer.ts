@@ -1,9 +1,10 @@
-import BG_16_9 from './assets/background/BG_16_9.jpg';
-import BG_9_16 from './assets/background/BG_9_16.jpg';
+// 圖片用字串常數（不要用 import URL，否則會被當成 ES module 載入而觸發 CORS）
+const BG_16_9 = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/background/BG_16_9.jpg';
+const BG_9_16 = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/background/BG_9_16.jpg';
 //import mainVideoFile from './assets/video/ROG_OMNI_Video.webm';
 //import mainVideoFile from 'https://syntrend-html-omni-test.moonshine-studio.net/ROG_OMNI_Video.webm';
 
-const mainVideoFile = "https://syntrend-html-omni.moonshine-studio.net/ROG_OMNI_Video.webm";
+const mainVideoFile = "https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/video/ROG_OMNI_Video.webm";
 const mainVideoFileforios = "https://syntrend-html-omni.moonshine-studio.net/ROG_OMNI_Video.mp4";
 // 依照平台選取影片檔案
 function isIOS(): boolean {

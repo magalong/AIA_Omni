@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -6,6 +7,7 @@ import { logger } from 'hono/logger';
 import { env } from './env.js';
 import { attachAsrWs } from './routes/asr-ws.js';
 import { tts } from './routes/tts.js';
+import { dify } from './routes/dify.js';
 
 const app = new Hono();
 
@@ -24,10 +26,10 @@ app.use(
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
 app.route('/tts', tts);
+app.route('/dify', dify);
 
 // TODO: 路由將陸續從 Cloudflare Workers 搬遷至此
 // app.route('/azure', azureRoutes);
-// app.route('/dify', difyRoutes);
 // app.route('/elevenlabs', elevenlabsRoutes);
 
 // 前端靜態檔案（放在 /public 目錄）

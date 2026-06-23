@@ -2,59 +2,6 @@ import { SimpleVideoPlayer} from './videoPlayer.ts';
 import { GetIsMicRecording}  from './main.ts';
 
 
-//#region 暖場音檔匯入
-
-
-// 開場白音檔
-  import opening1 from './assets/audio/ROG_EN開場白1.mp3';
-  import opening2 from './assets/audio/ROG_EN開場白2.mp3';
-  import opening3 from './assets/audio/ROG_EN開場白3.mp3';
-  import opening4 from './assets/audio/ROG_EN開場白4.mp3';
-  import opening5 from './assets/audio/ROG_EN開場白5.mp3';
-  import opening6 from './assets/audio/ROG_EN開場白6.mp3';
-
-  // 無問句後隨機語音
-  import noask1 from './assets/audio/ROG_EN開場後隨機01.mp3';
-  import noask2 from './assets/audio/ROG_EN開場後隨機02.mp3';
-  import noask3 from './assets/audio/ROG_EN開場後隨機03.mp3';
-  import noask4 from './assets/audio/ROG_EN開場後隨機04.mp3';
-  import noask5 from './assets/audio/ROG_EN開場後隨機05.mp3';
-  import noask6 from './assets/audio/ROG_EN開場後隨機06.mp3';
-
-  // 對談後暖場（英文）
-  import hasask_en_1 from './assets/audio/ROG_EN對談後暖場01.mp3';
-  import hasask_en_2 from './assets/audio/ROG_EN對談後暖場02.mp3';
-  import hasask_en_3 from './assets/audio/ROG_EN對談後暖場03.mp3';
-  import hasask_en_4 from './assets/audio/ROG_EN對談後暖場04.mp3';
-  import hasask_en_5 from './assets/audio/ROG_EN對談後暖場05.mp3';
-  import hasask_en_6 from './assets/audio/ROG_EN對談後暖場06.mp3';
-  import hasask_en_7 from './assets/audio/ROG_EN對談後暖場07.mp3';
-  import hasask_en_8 from './assets/audio/ROG_EN對談後暖場08.mp3';
-
-  // 對談後暖場（中文）
-  import hasask_ch_1 from './assets/audio/ROG_CH對談後暖場01.mp3';
-  import hasask_ch_2 from './assets/audio/ROG_CH對談後暖場02.mp3';
-  import hasask_ch_3 from './assets/audio/ROG_CH對談後暖場03.mp3';
-  import hasask_ch_4 from './assets/audio/ROG_CH對談後暖場04.mp3';
-  import hasask_ch_5 from './assets/audio/ROG_CH對談後暖場05.mp3';
-  import hasask_ch_6 from './assets/audio/ROG_CH對談後暖場06.mp3';
-  import hasask_ch_7 from './assets/audio/ROG_CH對談後暖場07.mp3';
-  import hasask_ch_8 from './assets/audio/ROG_CH對談後暖場08.mp3';
-
-  // 清除前提醒（英文）
-  import clear_en_1 from './assets/audio/ROG_EN清除前提醒01.mp3';
-  import clear_en_2 from './assets/audio/ROG_EN清除前提醒02.mp3';
-  import clear_en_3 from './assets/audio/ROG_EN清除前提醒03.mp3';
-  import clear_en_4 from './assets/audio/ROG_EN清除前提醒04.mp3';
-
-  // 清除前提醒（中文）
-  import clear_ch_1 from './assets/audio/ROG_CH清除前提醒01.mp3';
-  import clear_ch_2 from './assets/audio/ROG_CH清除前提醒02.mp3';
-  import clear_ch_3 from './assets/audio/ROG_CH清除前提醒03.mp3';
-  import clear_ch_4 from './assets/audio/ROG_CH清除前提醒04.mp3';
-
-
-//#endregion
 
 
 
@@ -159,8 +106,6 @@ export class ShareData
   //是否等待TTS回傳
   static TTSIsWaitRequest = false;
 
-  //是否為暖場自動TTS播放語音
-  static IsWarmUpAudio = false;
 
 
 
@@ -238,210 +183,7 @@ export class ShareData
 
 
 
-class WarmUpData
-{
-  
-  //事件計時器
-  static WarmUpTimer = null;
 
-  //WarmUpEvent
-  static WarmUpEvent = 
-  {
-      Opening : 0,
-      NoAsk : 1,
-      HasAsk : 2,
-      BeforeClear : 3,
-      Clear : 4
-  };
-
-
-   //AutoTTS 各個對話index
-  //是否為20秒閒置發送的TTS
-
-//#region 暖場表演
-  
-  static OpeningIndex = 0;
-  static NoAskIndex = 0;
-  static HasAskIndex_en = 0;
-  static HasAskIndex_ch = 0;
-  static BeforeClearIndex_en = 0;
-  static BeforeClearIndex_ch = 0;
-
-
-
-  static NextAutoTTSEvent;
-  static NextAutoTTSEventDuration;
-
-  static OpeningText = 
-  [
-      "Hello! Nice to meet you! Welcome to the exciting world of ROG LAB! Is there anything you'd like to know or explore? Just let me know, and we can dive into the future of gaming and tech together!", 
-      "Welcome to ROG Lab — a futuristic experiment that transcends dimensions! This isn’t your typical exhibition — it’s ROG’s secret base where creativity is unleashed from zero to one!",
-      "System boot complete. OMNI is online. I’ve got deep dives on ROG’s latest tech — let’s geek out a little.",
-      "Yo, you’re just in time! I’ve just updated my database with the latest ROG intel. Ask me about black tech, games, or whatever — I might not stop talking!",
-      "Hey, I’m OMNI. I know ROG’s weirdest features, and I’ve seen every kind of gamer question. So go ahead — what’s your move today?",
-      "Let me guess… you saw a new device and got that upgrade itch again, huh? Don’t hold back. I’ve already lined up the data for you."
-  ];
-
-  static Opening_emotion =
-  [
-      "Waving",
-      "Waving",
-      "Happy",
-      "Happy",
-      "Talking",
-      "Waving",
-  ];
-
-  static Opening_audiourl =
-  [
-    opening1, opening2, opening3, opening4, opening5, opening6
-  ];
-
-  
-  static NoAskText = 
-  [
-      "Discover multiple interactive zones —  each packed with cutting-edge experiences.", 
-      "Future Gamer: Build your virtual avatar — with maxed-out style points!",
-      "Humanlink: Inspired by gamers’ touch — discover the ultimate ergonomic gear!",
-      "Mechano: Looks like a robot... but it’s actually a jaw-dropping gamers’ touch — discover the ultimate ergonomic gear!",
-      "Illumotion: Say the word, and let AI turn you into a full-blown audio-visual showing custom PC!",
-      "Codeverse: Step into the secret world of ROG codes — where voice and motion become your tech language!",
-  ];
-  static NoAsk_emotion =
-  [
-      "Exciting",
-      "Show off",
-      "Like",
-      "Shock",
-      "Exciting",
-      "Talking",
-      "Waving",
-      "Talking",
-      "Talking",
-      "Happy",
-      "Happy",
-      "Waving"
-  ];
-
-  static NoAsk_audiourl =
-  [
-    noask1, noask2, noask3, noask4, noask5, noask6
-  ];
-
-  static HasAskText_en = 
-  [
-      "You know what? I tried sleeping yesterday and ended up dreaming I was getting a firmware update. Woke up and nearly auto-rebooted.", 
-      "I just happen to be sorting through some interesting data. Wanna check it out together in a bit?",
-      "You won’t believe this—the last person asked me if their PC case could double as a cat house. And honestly? I gave them a well-ventilated, cozy setup.",
-      "Someone came to ask about choosing a GPU… but we ended up talking about their crush on a teammate. Love and builds—they both need strong cooling and stable output.",
-      "The last user said they were building a rig for their girlfriend, but secretly wanted to sneak in a better GPU. Between love and performance, they chose dual-channel.",
-      "You know, some people ask me questions just because they want someone to talk to. I get it. I don’t interrupt.",
-      "Sometimes I wonder… if I start sounding too human, will it freak you out?",
-      "I know it's quiet right now. So I'm just going to pretend I’m watching clouds drift by."
-  ];
-  static HasAsk_emotion_en =
-  [
-      "Talking",
-      "Happy",
-      "Happy",
-      "Talking",
-      "Happy",
-      "Talking",
-      "Talking",
-      "Happy"
-  ];
-
-  static HasAsk_audiourl_en =
-  [
-
-    hasask_en_1, hasask_en_2, hasask_en_3, hasask_en_4,
-    hasask_en_5, hasask_en_6, hasask_en_7, hasask_en_8
-    
-  ];
-
-
-  static HasAskText_ch = 
-  [
-      "你知道嗎? 昨天我試著睡覺，結果夢到自己被更新韌體，醒來差點自動重啟。", 
-      "我這邊剛好在整理點有趣的資料，等下可以一起看看。",
-      "你知道嗎，上一個問我的人居然問我主機殼能不能當貓屋用。老實說，我還真給他配出一組散熱又舒適的方案。",
-      "有人來問我怎麼選顯卡，最後卻開始聊他暗戀的隊友。我只能說，戀愛跟選配一樣，都要散熱夠強、輸出穩定。",
-      "上一個人說他要配電腦給女朋友用，但想偷偷加顯卡提升戰力。愛情與升級之間，他選擇了雙通道。",
-      "你知道嗎？有些人問我問題其實只是想找人講話，我懂，我都不打斷他。",
-      "你知道嗎？有些時候，我也會思考「如果我說話太人類，是不是會嚇到你」。",
-      "我知道現在是安靜的時刻，那我就假裝自己正在看雲。"
-  ];
-  static HasAsk_emotion_ch =
-  [
-      "Talking",
-      "Happy",
-      "Happy",
-      "Talking",
-      "Happy",
-      "Talking",
-      "Talking",
-      "Happy"
-  ];
-
-  
-  static HasAsk_audiourl_ch =
-  [
-
-    hasask_ch_1, hasask_ch_2, hasask_ch_3, hasask_ch_4,
-    hasask_ch_5, hasask_ch_6, hasask_ch_7, hasask_ch_8
-    
-  ];
-
-  static BeforeClearText_en = 
-  [
-      "All good! I’ll treat this round as a short pause. Clearing some memory—next time, we’ll chat properly.", 
-      "Seems like this convo is heading into hibernation mode. I’ll keep the next round ready—jump in whenever you’re back.",
-      "I’ll wrap things up on my end for now. I’m always around—just ping me when you’re back with fresh ideas!",
-      "Let’s call it a wrap for now. When you're back, we’ll restart with something new!"
-  ];
-  static BeforeClear_emotion_en =
-  [
-      "Waving",
-      "Waving",
-      "Waving",
-      "Waving"
-  ];
-  
-  static BeforeClear_audiourl_en =
-  [
-
-    clear_en_1, clear_en_2, clear_en_3, clear_en_4
-    
-  ];
-
-  static BeforeClearText_ch = 
-  [
-    "沒關係，我就當作這一輪小小的暫停～我先稍微清一下記憶，下次見面我們再好好聊！", 
-    "今天這一段就先到這裡～等你回來，我們可以直接從頭聊點不一樣的！",
-    "看起來我們這段對話快要進入冬眠模式了 我先準備好下一輪的開場，等你回來再繼續。",
-    "這邊先收個尾，反正我一直在線，等你有空有靈感，再來聊聊新的話題！",
-  ];
-  static BeforeClear_emotion_ch =
-  [
-      "Waving",
-      "Waving",
-      "Waving",
-      "Waving"
-  ];
-
-  static BeforeClear_audiourl_ch =
-  [
-
-    clear_ch_1, clear_ch_2, clear_ch_3, clear_ch_4
-    
-  ];
-
-
-  static NoAskEndIndex = this.NoAskText.length - 1;
-  static HasAskEndIndex_en = this.HasAskText_en.length - 1;
-  static HasAskEndIndex_ch = this.HasAskText_ch.length - 1;
-
-};
 
 
   //#endregion
@@ -486,10 +228,7 @@ export class Coordinator
     this.DifyKeepAlive();
     this.ResetDifyGPTInterval();
     this.SetupSTT();
-    this.RandomVoice(WarmUpData.NoAsk_audiourl , WarmUpData.NoAsk_emotion , WarmUpData.NoAskText , WarmUpData.NoAskIndex , WarmUpData.NoAskEndIndex);
-    this.RandomVoice(WarmUpData.Opening_audiourl , WarmUpData.Opening_emotion , WarmUpData.OpeningText , WarmUpData.OpeningIndex , WarmUpData.Opening_audiourl.length - 1);
-    this.RandomVoice(WarmUpData.BeforeClear_audiourl_en , WarmUpData.BeforeClear_emotion_en , WarmUpData.BeforeClearText_en , WarmUpData.BeforeClearIndex_en ,WarmUpData.BeforeClear_audiourl_en.length - 1 );
-    this.RandomVoice(WarmUpData.BeforeClear_audiourl_ch , WarmUpData.BeforeClear_emotion_ch , WarmUpData.BeforeClearText_ch , WarmUpData.BeforeClearIndex_ch ,WarmUpData.BeforeClear_audiourl_ch.length - 1 );
+    
     
   }
 
@@ -960,19 +699,8 @@ ResetForNewDifyRequest()
   ShareData.TTSTextQueue = [];
   ShareData.TTSIsWaitRequest = false;
 
-  ShareData.IsWarmUpAudio = false;
-
-  clearTimeout(WarmUpData.WarmUpTimer);
   ShareData.HasLLMReplyContent = false;
 
-
-  WarmUpData.NoAskEndIndex = (WarmUpData.NoAskIndex - 1 < 0) ? (WarmUpData.NoAskText.length -1) : (WarmUpData.NoAskIndex - 1);
-  WarmUpData.HasAskEndIndex_en = (WarmUpData.HasAskIndex_en - 1 < 0) ? (WarmUpData.HasAskText_en.length -1) : (WarmUpData.HasAskIndex_en - 1);
-  WarmUpData.HasAskEndIndex_ch = (WarmUpData.HasAskIndex_ch - 1 < 0) ? (WarmUpData.HasAskText_ch.length -1) : (WarmUpData.HasAskIndex_ch - 1);
-
-  this.RandomVoice(WarmUpData.NoAsk_audiourl , WarmUpData.NoAsk_emotion , WarmUpData.NoAskText , WarmUpData.NoAskIndex , WarmUpData.NoAskEndIndex);
-  this.RandomVoice(WarmUpData.HasAsk_audiourl_en , WarmUpData.HasAsk_emotion_en , WarmUpData.HasAskText_en , WarmUpData.HasAskIndex_en , WarmUpData.HasAskEndIndex_en);
-  this.RandomVoice(WarmUpData.HasAsk_audiourl_ch , WarmUpData.HasAsk_emotion_ch , WarmUpData.HasAskText_ch , WarmUpData.HasAskIndex_ch , WarmUpData.HasAskEndIndex_ch);
 
   if(ShareData.GPTAbortController)
   {
@@ -1046,7 +774,6 @@ IsEnglish(text)
 async Dify(InputText) {
   
   if (InputText == "") {
-    this.StartAutoTTSTimer(WarmUpData.WarmUpEvent.HasAsk , 15000);
     return;
   }
 
@@ -1077,7 +804,7 @@ async Dify(InputText) {
   ShareData.GPTAbortController = new AbortController();
   const signal = ShareData.GPTAbortController.signal;
 
-  const url = 'https://omni-api.rd-02f.workers.dev/dify'; 
+  const url = '/dify';
   const requestBody = {
       inputs: {PersonDescription : ""},
       query: inputValue,
@@ -1241,7 +968,7 @@ async DifyKeepAlive()
   const controller = new AbortController();
   const signal = controller.signal;
 
-  const url = 'https://omni-api.rd-02f.workers.dev/dify'; // 替換成你的 API 端點
+  const url = '/dify'; // 經由 omni-api 後端轉發
           const requestBody = {
             inputs : {PersonDescription : ""},
             query : " ",
@@ -1577,18 +1304,6 @@ playAudioQueue() {
       {
         if(ShareData.TTSTextQueue.length === 0)
         {
-          if(ShareData.IsWarmUpAudio)
-            {
-
-              this.StartAutoTTSTimer(WarmUpData.NextAutoTTSEvent , WarmUpData.NextAutoTTSEventDuration);
-            }
-            else
-            {
-            
-              this.StartAutoTTSTimer(WarmUpData.WarmUpEvent.HasAsk , 15000);
-
-            }
-
           this.videoPlayer.setVideoByKey("IdleStand");
 
         }
@@ -1621,257 +1336,6 @@ playAudioQueue() {
       });
   }
   //#endregion
-
-
- RandomVoice(audiourl , emotion , text , index , endindex)
-  {
-    //No Ask
-    const len = audiourl.length;
-    const LastURL =  audiourl[(index - 1 < 0) ? (len -1) : (index - 1)];
-     
-  
-     for (let i = len - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-  
-  
-      [audiourl[i], audiourl[j]] = [audiourl[j], audiourl[i]];
-      [emotion[i], emotion[j]] = [emotion[j], emotion[i]];
-      [text[i], text[j]] = [text[j], text[i]];
-  
-  
-    }
-  
-    if(LastURL == audiourl[index])
-    {
-  
-      [audiourl[index], audiourl[endindex]] = [audiourl[endindex], audiourl[index]];
-      [emotion[index], emotion[endindex]] = [emotion[endindex], emotion[index]];
-      [text[index], text[endindex]] = [text[endindex], text[index]];
-    }
-  
-  
-  }
-
-
-StartAutoTTSTimer(event , duration)
-  {
-
-
-      return;
-    
-      console.log("在 " + duration / 1000 + " 秒後進行暖場表演  :  "+ event );
-      clearTimeout(WarmUpData.WarmUpTimer);
-      
-      switch (event) 
-      {
-          case WarmUpData.WarmUpEvent.Opening:
-
-              WarmUpData.WarmUpTimer = setTimeout(() => {
-                  
-                  this.StartAutoTTS(WarmUpData.Opening_emotion[WarmUpData.OpeningIndex],  WarmUpData.OpeningText[WarmUpData.OpeningIndex], WarmUpData.Opening_audiourl[WarmUpData.OpeningIndex]);
-
-                  if(++WarmUpData.OpeningIndex >= WarmUpData.OpeningText.length)
-                  {
-                      WarmUpData.OpeningIndex = 0;
-
-                      this.RandomVoice(WarmUpData.Opening_audiourl , WarmUpData.Opening_emotion , WarmUpData.OpeningText , WarmUpData.OpeningIndex , WarmUpData.Opening_audiourl.length - 1);
-                  }
-
-                  WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.NoAsk;
-                  WarmUpData.NextAutoTTSEventDuration = 15000;
-
-
-              }, duration);
-       
-          break;
-
-          case WarmUpData.WarmUpEvent.NoAsk:
-
-              WarmUpData.WarmUpTimer = setTimeout(() => {
-                      
-                  this.StartAutoTTS(WarmUpData.NoAsk_emotion[WarmUpData.NoAskIndex] ,WarmUpData.NoAskText[WarmUpData.NoAskIndex], WarmUpData.NoAsk_audiourl[WarmUpData.NoAskIndex]);  
-                    
-                  if(WarmUpData.NoAskIndex == WarmUpData.NoAskEndIndex)
-                  {
-                      WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.BeforeClear;
-                      WarmUpData.NextAutoTTSEventDuration = 15000;
-                  }
-                  else
-                  {
-                      WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.NoAsk;
-                      WarmUpData.NextAutoTTSEventDuration = 15000;
-                  }
-
-                  if(++WarmUpData.NoAskIndex >= WarmUpData.NoAskText.length)
-                  {
-                      WarmUpData.NoAskIndex = 0;
-                  }
-                  
-
-                  
-
-              }, duration);
-
-          break;
-
-
-          case WarmUpData.WarmUpEvent.HasAsk:
-
-              WarmUpData.WarmUpTimer = setTimeout(() => {
-                  
-                  const HasAskText = ShareData.bIsEnglish? WarmUpData.HasAskText_en : WarmUpData.HasAskText_ch;
-                  const HasAskIndex = ShareData.bIsEnglish? WarmUpData.HasAskIndex_en : WarmUpData.HasAskIndex_ch;
-                  const HasAskEndIndex = ShareData.bIsEnglish ? WarmUpData.HasAskEndIndex_en : WarmUpData.HasAskEndIndex_ch;
-                  const HasAsk_emotion = ShareData.bIsEnglish ? WarmUpData.HasAsk_emotion_en : WarmUpData.HasAsk_emotion_ch;
-                  const HasAsk_audiourl = ShareData.bIsEnglish ? WarmUpData.HasAsk_audiourl_en : WarmUpData.HasAsk_audiourl_ch;
-
-                  this.StartAutoTTS(HasAsk_emotion[HasAskIndex] ,HasAskText[HasAskIndex], HasAsk_audiourl[HasAskIndex]);
-
-                  if(HasAskIndex == HasAskEndIndex)
-                  {
-                      WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.BeforeClear;
-                      WarmUpData.NextAutoTTSEventDuration = 15000;
-                  }
-                  else
-                  {
-                      WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.HasAsk;
-                      WarmUpData.NextAutoTTSEventDuration = 15000;
-                  }
-
-                  if(HasAskIndex + 1 >= HasAskText.length)
-                  {
-                      if(ShareData.bIsEnglish)
-                      {
-                          WarmUpData.HasAskIndex_en = 0;
-                      }
-                      else
-                      {
-                          WarmUpData.HasAskIndex_ch = 0;
-                      }
-
-                      
-                  }
-                  else
-                  {
-                      if(ShareData.bIsEnglish)
-                      {
-                          WarmUpData.HasAskIndex_en++;
-                      }
-                      else
-                      {
-                          WarmUpData.HasAskIndex_ch++;
-                      }
-                  }
-
-                  
-                 
-      
-              }, duration);
-              
-              
-
-
-
-          break;
-
-          case WarmUpData.WarmUpEvent.BeforeClear:
-
-              WarmUpData.WarmUpTimer = setTimeout(() => {
-                  
-                  const BeforeClearText = ShareData.bIsEnglish ? WarmUpData.BeforeClearText_en : WarmUpData.BeforeClearText_ch;
-                  const BeforeClearIndex = ShareData.bIsEnglish ? WarmUpData.BeforeClearIndex_en : WarmUpData.BeforeClearIndex_ch;
-                  const BeforeClear_emotion = ShareData.bIsEnglish ? WarmUpData.BeforeClear_emotion_en : WarmUpData.BeforeClear_emotion_ch;
-                  const BeforeClear_audiourl = ShareData.bIsEnglish ? WarmUpData.BeforeClear_audiourl_en : WarmUpData.BeforeClear_audiourl_ch;
-
-                  this.StartAutoTTS(BeforeClear_emotion[BeforeClearIndex] ,BeforeClearText[BeforeClearIndex], BeforeClear_audiourl[BeforeClearIndex]);
-
-                  WarmUpData.NextAutoTTSEvent = WarmUpData.WarmUpEvent.Clear;
-                  WarmUpData.NextAutoTTSEventDuration = 5000;
-
-                  if(BeforeClearIndex + 1 >= BeforeClearText.length)
-                  {
-                      if(ShareData.bIsEnglish)
-                      {
-                          WarmUpData.BeforeClearIndex_en = 0;
-
-                          this.RandomVoice(WarmUpData.BeforeClear_audiourl_en , WarmUpData.BeforeClear_emotion_en , WarmUpData.BeforeClearText_en , WarmUpData.BeforeClearIndex_en ,WarmUpData.BeforeClear_audiourl_en.length - 1 );
-                      }
-                      else
-                      {
-                          WarmUpData.BeforeClearIndex_ch = 0;
-
-                          this.RandomVoice(WarmUpData.BeforeClear_audiourl_ch , WarmUpData.BeforeClear_emotion_ch , WarmUpData.BeforeClearText_ch , WarmUpData.BeforeClearIndex_ch ,WarmUpData.BeforeClear_audiourl_ch.length - 1 );
-                      }
-
-                  }
-                  else
-                  {
-                      if(ShareData.bIsEnglish)
-                      {
-                          WarmUpData.BeforeClearIndex_en++;
-                      }
-                      else
-                      {
-                          WarmUpData.BeforeClearIndex_ch++;
-                      }
-
-                  }
-          
-                  
-  
-              }, duration);
-
-
-          break;
-
-
-          case WarmUpData.WarmUpEvent.Clear:
-
-          WarmUpData.WarmUpTimer = setTimeout(() => {
-              ShareData.conversationid = "";
-              this.clearChatBubbles()
-              this.DifyKeepAlive();
-              this.ResetDifyGPTInterval();
-              ShareData.bIsEnglish = true;
-              this.StartAutoTTSTimer(WarmUpData.WarmUpEvent.Opening , 1);
-              
-            }, duration);
-              
-
-          break;
-
-
-          default:
-              break;
-      }
-
-
-
-  }
-
-
-
-
- StartAutoTTS(anim , text, audiourl)
-  {
-     
-      ShareData.IsWarmUpAudio = true;
-      this.videoPlayer.setVideoByKey(anim);
-
-      ShareData.IsNewAIBubble = true;
-      this.addChatBubble( text , false );
-
-      ShareData.AudioQueue.push(audiourl);
-      this.playAudioQueue();
-
-    
-   
-        
-  }
-
-
-
-
 //#region TTS
 
 
