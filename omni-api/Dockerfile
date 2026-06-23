@@ -1,7 +1,7 @@
 # --- 1. build 前端 ---
 FROM node:20-alpine AS frontend
 WORKDIR /frontend
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 RUN npm install
 COPY tsconfig.json vite.config.ts ./
 COPY index.html ./
@@ -11,7 +11,7 @@ RUN npm run build
 # --- 2. build 後端 ---
 FROM node:20-alpine AS backend
 WORKDIR /app
-COPY omni-api/package.json omni-api/package-lock.json* ./
+COPY omni-api/package.json omni-api/package-lock.json ./
 RUN npm install
 COPY omni-api/tsconfig.json ./
 COPY omni-api/src ./src
@@ -32,4 +32,8 @@ COPY --from=backend /app/package.json ./package.json
 COPY --from=frontend /frontend/dist ./public
 
 EXPOSE 8080
+
+# 以非 root 的 node 使用者執行（安全性最佳實踐）
+USER node
+
 CMD ["node", "dist/index.js"]

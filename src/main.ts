@@ -127,11 +127,7 @@ function HandleRecording(IsStartRecord : boolean)
 
     const CheckRecord = function() 
     {
-        //檢查是否STT SDK 初始化完成
-        if(!ShareData.IsAzureSTTSDKSetupDone)
-        {
-            return;
-        }
+
 
         //執行動作重複
         if(IsMicRecording == IsStartRecord)

@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -28,9 +28,7 @@ app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 app.route('/tts', tts);
 app.route('/dify', dify);
 
-// TODO: 路由將陸續從 Cloudflare Workers 搬遷至此
-// app.route('/azure', azureRoutes);
-// app.route('/elevenlabs', elevenlabsRoutes);
+
 
 // 前端靜態檔案（放在 /public 目錄）
 app.use('/*', serveStatic({ root: './public' }));

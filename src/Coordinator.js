@@ -227,7 +227,7 @@ export class Coordinator
     // window onload 
     this.DifyKeepAlive();
     this.ResetDifyGPTInterval();
-    this.SetupSTT();
+  
     
     
   }
@@ -269,123 +269,15 @@ export class Coordinator
 
 //#region STT 
 
- SetupSTT()
-{
-    console.log("Azure Speech SDK Loading！")
-    var azurescript = document.createElement('script');
-    azurescript.src = "https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.js";
-    azurescript.onload = function() {
-    console.log("Azure Speech SDK 已成功載入！");
 
-        ShareData.IsAzureSTTSDKSetupDone = true;
-
-    };
-    document.head.appendChild(azurescript);
-}
 
 async startRecognition() 
 {
 
 
+
     this.connectASR();
-    return;
-    // 確認 Azure Speech SDK 是否已加載
-    if (!ShareData.IsAzureSTTSDKSetupDone) 
-    {
-        console.log("Azure Speech SDK 未加載。請確保 SDK 已通過其他方式嵌入到頁面中。");
-        return;
-    }
 
-    var IsRefreshToken = false;
-    const now = Date.now();
-    const tokenLimit = 8 * 60 * 1000; // 8 分鐘檢查點
-    var token;
-    var region;
-
-    if((now - ShareData.TokenTimestamp) > tokenLimit)
-    {
-
-      const response = await fetch('https://omni-api.rd-02f.workers.dev/azure-token');
-
-      if (!response.ok) throw new Error("無法取得 Azure Token");
-
-      const data = await response.json();
-
-      console.log(data);
-
-      token = data.token;
-
-      region = data.region || "eastasia";
-
-      IsRefreshToken = true;
-
-      ShareData.TokenTimestamp = now;
-
-    }
-
-
-    if (!ShareData.AzureRecognizer) {
-
-        console.log("建立 Speech Recognizer");
-
-        const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
-
-        speechConfig.speechRecognitionLanguage = "zh-TW"; // 修改為所需語言代碼
-        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-
-        // 初始化 SpeechRecognizer 並將其設置為全域變數
-        ShareData.AzureRecognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-
-        ShareData.AzureRecognizer.recognizing =  (s, e) => {
-
-            this.stttimer.stop();
-            console.log(`正在識別: ${e.result.text}`); 
-            this.addChatBubble(ShareData.STTString + e.result.text , true);
-            
-        
-        };
-        
-        ShareData.AzureRecognizer.recognized =  (s, e) => {
-            if (e.result.reason === window.SpeechSDK.ResultReason.RecognizedSpeech) {
-
-                console.log(`識別完成: ${e.result.text}`);  
-                ShareData.STTString += e.result.text; 
-
-            }
-        };
-
-        ShareData.AzureRecognizer.canceled = function (s, e) {
-            console.error(`識別取消: ${e.reason}`);
-        };
-
-        ShareData.AzureRecognizer.sessionStopped = function (s, e) {
-            console.log("識別會話結束");
-        };
-    }
-    else
-    {
-      if(IsRefreshToken)
-      { 
-        console.log("更新token");
-        ShareData.AzureRecognizer.authorizationToken = token;
-      } 
-    }
-
-
-    this.llmtimer.reset();
-    this.ttstimer.reset();
-    this.stttimer.reset();
-    this.stttimer.start();
-
-    ShareData.AzureRecognizer.startContinuousRecognitionAsync(function () {
-
-    console.log("語音識別已啟動");
-
-    },
-        function (error) {
-            console.error("啟動語音識別時發生錯誤: ", error);
-
-        });
 
 
 }
@@ -395,40 +287,7 @@ stopRecognition()
 {
 
     this.stopASR();
-    return;
-    // 如果 AzureRecognizer 變數已定義，則停止識別
-    if (ShareData.AzureRecognizer) 
-    {
-      ShareData.AzureRecognizer.stopContinuousRecognitionAsync(
-             () => {
-
-                console.log("識別已停止");
-                this.stttimer.stop();
-
-                if(ShareData.STTString != "")
-                {
-                  this.addChatBubble(ShareData.STTString , true);
-                  this.Dify(ShareData.STTString);
-                }
-
-                 ShareData.STTString = "";
-                 ShareData.IsSTTProcessing = false;
-
-
-
-
-            },
-            function (error) {
-                console.error("停止識別時出錯: ", error);
-
-
-            }
-        );
-    }
-    else 
-    {
-        console.error("沒有識別會話可停止");
-    }
+    
 }
 
 
@@ -535,9 +394,7 @@ async startMicrophone() {
   processor.port.onmessage = (e) => {
     if (!this.asrWs || this.asrWs.readyState !== WebSocket.OPEN) return;
     const base64 = this.arrayBufferToBase64(e.data.buffer);
-    if (audioSendCount < 5) {
-      //console.log(`[ASR] 送出音訊 #${audioSendCount}, base64 長度: ${base64.length}, WS 狀態: ${this.asrWs.readyState}`);
-    }
+
     audioSendCount++;
     this.asrWs.send(JSON.stringify({
       event_id: 'evt_' + Date.now(),
@@ -562,7 +419,7 @@ async startMicrophone() {
 arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = '';
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
 }
 
@@ -611,72 +468,66 @@ connectASR() {
   this.asrWs = new WebSocket(`${wsProtocol}//${location.host}/asr`);
 
   this.asrWs.onopen = () => console.log('✅ connected');
+  this.asrWs.onmessage = (e) => this.handleAsrMessage(e);
+  this.asrWs.onclose = (e) => {
+    console.log('❌ closed', e.code, e.reason);
+    this.finishAsrSession();
+  };
+  this.asrWs.onerror = (e) => console.log('⚠️ error', e);
 
-  this.asrWs.onmessage = (e) => {
+}
 
-    console.log('📩', e.data);
+handleAsrMessage(e) {
 
-    const msg = JSON.parse(e.data);
-    
-    if (msg.type === 'session.created') {
+
+
+  const msg = JSON.parse(e.data);
+
+  switch (msg.type) {
+    case 'session.created':
       // 跳過 session.update，直接用預設設定開始送音訊
       this.startMicrophone();
       this.videoPlayer.setVideoByKey("Listening");
       this.asrSessionReady = true;
-    }
+      break;
 
-    if (msg.type === 'session.updated') {
+    case 'session.updated':
       console.log('[ASR] ✅ session.updated 確認:', e.data);
-    }
+      break;
 
-    if (msg.type === 'error') {
+    case 'error':
       console.error('[ASR] ⚠️ DashScope 回報錯誤:', e.data);
-    }
+      break;
 
-    if (msg.type === 'conversation.item.input_audio_transcription.text') {
+    case 'conversation.item.input_audio_transcription.text':
       console.log('辨識中:', msg.stash);
       this.addChatBubble(ShareData.STTString + msg.stash , true);
-    }
+      break;
 
-    if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+    case 'conversation.item.input_audio_transcription.completed':
       console.log('✅ 最終:', msg.transcript);
-      ShareData.STTString += msg.transcript; 
+      ShareData.STTString += msg.transcript;
       this.addChatBubble(ShareData.STTString , true);
-    }
+      break;
 
-    if (msg.type === 'session.finished') {
+    case 'session.finished':
       console.log('[ASR]  session.finished:', e.data);
+      this.finishAsrSession();
+      break;
+  }
 
-        if(ShareData.STTString != "")
-        {
-            this.addChatBubble(ShareData.STTString , true);
-            this.Dify(ShareData.STTString);
-        }
+}
 
-        ShareData.STTString = "";
-        ShareData.IsSTTProcessing = false;
-        this.videoPlayer.setVideoByKey("IdleStand");
-    }
+// session.finished 與 onclose 共用：把累積的辨識結果送出並重置狀態
+finishAsrSession() {
+  if (ShareData.STTString != "") {
+    this.addChatBubble(ShareData.STTString , true);
+    this.Dify(ShareData.STTString);
+  }
 
-  };
-
-  this.asrWs.onclose = (e) =>
-    {
-        console.log('❌ closed', e.code, e.reason);
-
-        if(ShareData.STTString != "")
-        {
-            this.addChatBubble(ShareData.STTString , true);
-            this.Dify(ShareData.STTString);
-        }
-
-        ShareData.STTString = "";
-        ShareData.IsSTTProcessing = false;
-        this.videoPlayer.setVideoByKey("IdleStand");
-    } 
-
-  this.asrWs.onerror = (e) => console.log('⚠️ error', e);
-
+  ShareData.STTString = "";
+  ShareData.IsSTTProcessing = false;
+  this.videoPlayer.setVideoByKey("IdleStand");
 }
 
 //#endregion
@@ -719,15 +570,19 @@ ResetForNewDifyRequest()
 
 }
 
-IsEnglish(text) 
+// text 是否包含 words 裡的任一字串
+containsAny(text, words)
+{
+    return words.some((word) => text.includes(word));
+}
+
+IsEnglish(text)
 {
     let chineseCount = 0;
     let englishCount = 0;
 
     // 遍歷字符串的每個字符
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charAt(i);
-
+    for (const char of text) {
       // 判斷字符是否是中文
       if (/[\u4e00-\u9fa5]/.test(char)) {
         chineseCount++;  // 中文字符
@@ -738,214 +593,161 @@ IsEnglish(text)
       }
     }
 
-    if(chineseCount > 0)
-      {
+    // 有中文：預設非英文，除非要求改說英文
+    if (chineseCount > 0) {
+      return this.containsAny(text, ShareData.DifyReplyList_en);
+    }
 
-          for(const word of ShareData.DifyReplyList_en)
-          {
-              if(text.includes(word))
-              {
-                  return true;
-              }
-          }
+    // 有英文：預設英文，除非要求改說中文
+    if (englishCount > 0) {
+      return !this.containsAny(text, ShareData.DifyReplyList_ch);
+    }
 
-          return false;
-      }
-      else if (englishCount > 0 ) {
-
-          for(const word of ShareData.DifyReplyList_ch)
-          {
-              if(text.includes(word))
-              {
-                  return false;
-              }
-          }
-
-          return true;
-          
-      }
-      else {
-          return false;
-      }
+    return false;
 }
 
 
 
 async Dify(InputText) {
-  
+
   if (InputText == "") {
     return;
   }
 
-
   this.llmtimer.reset();
   this.llmtimer.start();
 
-
-
   this.ResetDifyGPTInterval();
-
   this.addChatBubble(InputText, true);
-
   this.ResetForNewDifyRequest();
-
-
 
   console.log("Dify 送出文字 : " + InputText);
   ShareData.bIsEnglish = this.IsEnglish(InputText);
 
-  InputText += ShareData.bIsEnglish ? " (按照格式用英文回答)" : " (按照格式用繁體中文回答)"; 
-  var inputValue = InputText;
-
-
-
+  const query = InputText + (ShareData.bIsEnglish ? " (按照格式用英文回答)" : " (按照格式用繁體中文回答)");
 
   // 重新建立 AbortController
   ShareData.GPTAbortController = new AbortController();
   const signal = ShareData.GPTAbortController.signal;
 
-  const url = '/dify';
   const requestBody = {
-      inputs: {PersonDescription : ""},
-      query: inputValue,
-      response_mode: "streaming",
-      conversation_id: ShareData.conversationid,
-      user: "abc-123"
+    inputs: { PersonDescription: "" },
+    query: query,
+    response_mode: "streaming",
+    conversation_id: ShareData.conversationid,
+    user: "abc-123",
   };
 
   try {
-      const response = await fetch(url, {
-          method: 'POST', // 設置為 POST 請求
-          headers: {
-            'Content-Type': 'application/json', // 設置請求的內容類型
-          },
-          body: JSON.stringify(requestBody), // 將 body 設置為 JSON 字串
-          signal: signal, // 這裡傳入 signal 以支持中斷
-      });
+    const response = await fetch('/dify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: signal,
+    });
 
-      if (response.ok) 
-      {
-          // 获取响应流
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let done = false;
-          let buffer = '';
-     
-          // 使用流式读取数据
-          while (!done) 
-          {
-              const { value, done: readerDone } = await reader.read();
+    if (!response.ok) {
+      alert("request error" + response.status);
+      throw new Error('請求失敗，狀態碼：' + response.status);
+    }
 
-              done = readerDone;
-
-              const textchunk = decoder.decode(value, { stream: true });
-
-              buffer += textchunk;
-
-              // 在这里，你可以每次读取到数据时进行处理，比如显示在页面上
-              //document.getElementById('response').textContent = buffer;
-
-              while (buffer.includes("\n"))
-              {
-                  const newlineIndex = buffer.indexOf("\n");
-                  const line = buffer.slice(0, newlineIndex);
-                  buffer = buffer.slice(newlineIndex + 1);
-
-                  if (line.startsWith("data: "))
-                  {
-                      const jsonStr = line.slice(6).trim();
-                      try 
-                      {
-                          const parsedData = JSON.parse(jsonStr);
-
-                         
-                          ShareData.conversationid = parsedData.conversation_id;
-                          const GPTResponse = parsedData.answer;
-                          if(parsedData.event == "message")
-                          {
-                              this.GPTParser(GPTResponse);
-                          }
-                          else if(parsedData.event == "message_end")
-                          {
-                              console.log("結束回應");
-
-                          //表示回應格式 情緒未被正確解析
-                          if(!ShareData.IsLLMContent)
-                          {
-
-                              var text = "";
-
-                              if(ShareData.LLMResponseTemp == "")
-                              {
-                                  this.videoPlayer.setVideoByKey("Talking");
-                                  text = ShareData.bIsEnglish ? "Sorry, i cant understand, could you say again?" : "不好意思，我不太清楚，你可以再說一遍嗎？";
-                              }
-                              else
-                              {
-                                  this.videoPlayer.setVideoByKey("Waving");
-                                  text = ShareData.LLMResponseTemp + '。';
-                              }
-
-                              ShareData.IsNewAIBubble = true;
-                              this.addChatBubble(text , false );
-                              this.SendToElevenlabs(text);
-                
-                          }
-                          else
-                          {
-
-                         
-                              //有情緒；有回應文字；但結尾未出現符號造成最後一句沒送到TTS 
-                              if(ShareData.LLMResponseTemp != "")
-                              {
-                                  this.EmitValue(true, "", true);
-                              }
-                              //有情緒；無回應文字 手動作回應補償
-                              else if(!ShareData.HasLLMReplyContent)
-                              {
-                                  const text = ShareData.bIsEnglish ? "Sorry, i cant understand, could you say again?" : "不好意思，我不太清楚，你可以再說一遍嗎？";
-                                  ShareData.IsNewAIBubble = true;
-                                  this.addChatBubble(text , false );
-                                  this.SendToElevenlabs(text);
-                              }
-
-                          } 
-
-                          }
-                          else if(parsedData.event == "ping")
-                          {
-                              
-                          }
-                          else if(parsedData.event == "message_replace")
-                          {
-                              continue;
-                          }
-
-                      }
-                      catch(e)
-                      {
-                          console.log(e.message);
-                      }
-
-                  }
-
-              }
-          }
-
-      } 
-      else
-      {
-          alert("request error" + response.status);
-          throw new Error('請求失敗，狀態碼：' + response.status);
-      }
-  } 
-  catch (error) {
-      if (error.name === 'AbortError') {
-          console.log("TTS 請求已中斷，但不顯示錯誤訊息");
-          return; // 靜默處理，不執行 alert
-      }
-      alert("request error " + error.message); // 其他錯誤才顯示
+    await this.streamDifyResponse(response);
   }
+  catch (error) {
+    if (error.name === 'AbortError') {
+      console.log("TTS 請求已中斷，但不顯示錯誤訊息");
+      return; // 靜默處理，不執行 alert
+    }
+    alert("request error " + error.message); // 其他錯誤才顯示
+  }
+}
+
+// 讀取 Dify 的 streaming 回應，逐行處理 SSE
+async streamDifyResponse(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let done = false;
+  let buffer = '';
+
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    done = readerDone;
+    buffer += decoder.decode(value, { stream: true });
+
+    const NL = String.fromCharCode(10); // "\n"
+    while (buffer.includes(NL)) {
+      const newlineIndex = buffer.indexOf(NL);
+      const line = buffer.slice(0, newlineIndex);
+      buffer = buffer.slice(newlineIndex + 1);
+      this.handleDifyLine(line);
+    }
+  }
+}
+
+// 處理單行 SSE（格式為 data: {...}）
+handleDifyLine(line) {
+  if (!line.startsWith("data: ")) return;
+
+  const jsonStr = line.slice(6).trim();
+  try {
+    const parsedData = JSON.parse(jsonStr);
+    ShareData.conversationid = parsedData.conversation_id;
+    this.handleDifyEvent(parsedData);
+  }
+  catch (e) {
+    console.log(e.message);
+  }
+}
+
+// 依事件類型分派（ping / message_replace 不需處理）
+handleDifyEvent(parsedData) {
+  switch (parsedData.event) {
+    case "message":
+      this.GPTParser(parsedData.answer);
+      break;
+    case "message_end":
+      console.log("結束回應");
+      this.handleDifyMessageEnd();
+      break;
+  }
+}
+
+// message_end：補送殘留文字或做預設回覆
+handleDifyMessageEnd() {
+  // 沒有解析到情緒：用累積文字或預設句回覆
+  if (!ShareData.IsLLMContent) {
+    let text;
+    if (ShareData.LLMResponseTemp == "") {
+      this.videoPlayer.setVideoByKey("Talking");
+      text = this.fallbackReply();
+    } else {
+      this.videoPlayer.setVideoByKey("Waving");
+      text = ShareData.LLMResponseTemp + '。';
+    }
+    ShareData.IsNewAIBubble = true;
+    this.addChatBubble(text, false);
+    this.SendToElevenlabs(text);
+    return;
+  }
+
+  // 有情緒；有回應文字：把結尾未送出的最後一句補送 TTS
+  if (ShareData.LLMResponseTemp != "") {
+    this.EmitValue(true, "", true);
+  }
+  // 有情緒；無回應文字：做回應補償
+  else if (!ShareData.HasLLMReplyContent) {
+    const text = this.fallbackReply();
+    ShareData.IsNewAIBubble = true;
+    this.addChatBubble(text, false);
+    this.SendToElevenlabs(text);
+  }
+}
+
+// 聽不懂時的預設回覆句
+fallbackReply() {
+  return ShareData.bIsEnglish
+    ? "Sorry, i cant understand, could you say again?"
+    : "不好意思，我不太清楚，你可以再說一遍嗎？";
 }
 
 
@@ -961,75 +763,76 @@ ResetDifyGPTInterval()
      }, 120000); // 每2分鐘發送一次
 }
 
-async DifyKeepAlive()
-{
+async DifyKeepAlive() {
   console.log("Dify發送心跳訊號");
 
   const controller = new AbortController();
   const signal = controller.signal;
 
-  const url = '/dify'; // 經由 omni-api 後端轉發
-          const requestBody = {
-            inputs : {PersonDescription : ""},
-            query : " ",
-            response_mode : "streaming",
-            conversation_id : ShareData.conversationid,
-            user : "abc-123"
-          };
-        
-    try {
-        const response = await fetch(url, {
-            method: 'POST', // 設置為 POST 請求
-            headers: {
-                'Content-Type': 'application/json', // 設置請求的內容類型
-               
-            },
-            body: JSON.stringify(requestBody), // 將 body 設置為 JSON 字串
-            signal : signal,
-        });  
+  const requestBody = {
+    inputs: { PersonDescription: "" },
+    query: " ",
+    response_mode: "streaming",
+    conversation_id: ShareData.conversationid,
+    user: "abc-123",
+  };
 
-      if (response.ok) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let result = '';
-            while (true) {
-                // 👇 支援 AbortController：會在 signal.abort 時跳出
-                const { value, done } = await reader.read();
-                if (done) break;
+  try {
+    const response = await fetch('/dify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: signal,
+    });
 
-                // 讀到資料
-                const chunk = decoder.decode(value, { stream: true });
-                result += chunk;
-
-                // 持續處理每段資料
-                const parts = chunk.split('\n\n');
-              for (const part of parts) {
-                if (part.length > 5) {
-                    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-                    try {
-                        const parsed = JSON.parse(part.substring(5));
-                        
-
-                        console.log("心跳包發送成功");
-
-                        if (ShareData.conversationid === "") 
-                        {
-                            ShareData.conversationid = parsed.conversation_id;
-                        }
-                        return; 
-                    } 
-                    catch (e) {
-                        // 可能還沒解析完
-                    }
-                }
-              }
-            }
-          }
-        }
-     catch (error) {
-
-        console.log("request error " + error.message); // 其他錯誤才顯示
+    if (response.ok) {
+      await this.readKeepAliveResponse(response, signal);
     }
+  }
+  catch (error) {
+    console.log("request error " + error.message); // 其他錯誤才顯示
+  }
+}
+
+// 讀取心跳回應；解析到第一個有效封包即結束
+async readKeepAliveResponse(response, signal) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    if (this.handleKeepAliveChunk(chunk, signal)) return;
+  }
+}
+
+// 處理一段 chunk；回傳 true 代表已成功解析心跳、可結束
+handleKeepAliveChunk(chunk, signal) {
+  const SEP = String.fromCharCode(10, 10); // 連續兩個換行字元
+  for (const part of chunk.split(SEP)) {
+    if (part.length <= 5) continue;
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (this.tryParseKeepAlivePart(part)) return true;
+  }
+  return false;
+}
+
+// 嘗試解析單一封包；成功回 true
+tryParseKeepAlivePart(part) {
+  try {
+    const parsed = JSON.parse(part.substring(5));
+    console.log("心跳包發送成功");
+    if (ShareData.conversationid === "") {
+      ShareData.conversationid = parsed.conversation_id;
+    }
+    return true;
+  }
+  catch (e) {
+    // 可能還沒解析完
+    return false;
+  }
 }
 
 GPTParser(Response)
@@ -1040,7 +843,7 @@ GPTParser(Response)
     // "情緒" 完成判斷會在這裡，"回應"完成判斷會在 API message_end 事件
 
     //循環取字元判斷
-    for(var c of Response)
+    for(let c of Response)
     {
   
         //字元為空的而且目前是 "情緒" 回應就跳過
@@ -1086,107 +889,77 @@ GPTParser(Response)
 }
 
 
-EmitValue(IsReplyContent , text , IsComplete)
+EmitValue(IsReplyContent, text, IsComplete)
 {
-
-
   // 將字元累加至聊天氣泡的字串
   ShareData.LLMResponseTemp = ShareData.LLMResponseTemp + text;
 
-
-
-  //LLM 實際"回應"
-  if (IsReplyContent)
-  {
-
-      this.llmtimer.stop();
-      this.addChatBubble(text, false);
-
-      if(IsComplete && ShareData.LLMResponseTemp != "")
-      {
-        ShareData.LLMResponseTemp += '。';
-      }
-
-      // 檢查最後一個字元是否為標點符號
-      const punctuationPattern = /[。．！？!?.~，,]$/;
-
-      if (punctuationPattern.test(ShareData.LLMResponseTemp)) {
-      
-        console.log("執行 TTS => " + ShareData.LLMResponseTemp);
-
-
-        ShareData.HasLLMReplyContent = true;
-
-        // 呼叫 ElevenLabs 播放語音
-        if(ShareData.TTSIsWaitRequest)
-            ShareData.TTSTextQueue.push(ShareData.LLMResponseTemp);
-          else
-          {
-              ShareData.TTSIsWaitRequest = true;
-              this.SendToElevenlabs(ShareData.LLMResponseTemp);
-          }
-          
-        // 清空 LLMResponseTemp，準備累積下一段
-        ShareData.LLMResponseTemp = "";
-      }
-
+  if (IsReplyContent) {
+    this.handleReplyContent(text, IsComplete);
+  } else {
+    this.handleEmotion(IsComplete);
   }
-   //LLM 情緒
-  else
-  {
-      // 段落完成，準備傳給 ElevenLabs 做 TTS
-      if (!IsComplete)
-      {
-          return;
-      }
+}
 
-      console.log("情緒 : "+ShareData.LLMResponseTemp);
-      const cleaned = ShareData.LLMResponseTemp.replace(/[\s\n]/g, '');
-        
-      if(this.videoPlayer.animationList.hasOwnProperty(cleaned))
-      {
+// LLM 實際「回應」
+handleReplyContent(text, IsComplete)
+{
+  this.llmtimer.stop();
+  this.addChatBubble(text, false);
 
-        console.log("回應情緒存在 : " + cleaned);
-        this.videoPlayer.setVideoByKey(cleaned);
-        ShareData.LLMResponseTemp = "";
-
-      }
-      else
-      {
-
-        console.log("回應情緒不存在 : " + cleaned);
-        this.videoPlayer.setVideoByKey("Waving");
-        this.addChatBubble(ShareData.LLMResponseTemp , false);
-
-        // 檢查最後一個字元是否為標點符號
-        const punctuationPattern = /[。．！？!?.~，,]$/;
-        if (punctuationPattern.test(ShareData.LLMResponseTemp)) {
-        
-      
-        ShareData.HasLLMReplyContent = true;
-
-        // 呼叫 ElevenLabs 播放語音
-        if(ShareData.TTSIsWaitRequest)
-            ShareData.TTSTextQueue.push(ShareData.LLMResponseTemp);
-        else
-        {
-            ShareData.TTSIsWaitRequest = true;
-            this.SendToElevenlabs(ShareData.LLMResponseTemp);
-        }
-            
-        // 清空 LLMResponseTemp，準備累積下一段
-        ShareData.LLMResponseTemp = "";
-
-
-        }
-      }
+  // 結尾補句號（純空白/換行不補）
+  if (IsComplete && ShareData.LLMResponseTemp.trim() !== "") {
+    ShareData.LLMResponseTemp += '。';
   }
 
+  this.flushIfPunctuated();
+}
 
+// LLM 「情緒」
+handleEmotion(IsComplete)
+{
+  // 段落完成才處理
+  if (!IsComplete) return;
 
+  console.log("情緒 : " + ShareData.LLMResponseTemp);
+  const cleaned = ShareData.LLMResponseTemp.replace(/\s/g, '');
 
+  // 已知情緒：切換動畫
+  if (this.videoPlayer.animationList.hasOwnProperty(cleaned)) {
+    console.log("回應情緒存在 : " + cleaned);
+    this.videoPlayer.setVideoByKey(cleaned);
+    ShareData.LLMResponseTemp = "";
+    return;
+  }
 
+  // 不是情緒關鍵字：當成一般回應處理
+  console.log("回應情緒不存在 : " + cleaned);
+  this.videoPlayer.setVideoByKey("Waving");
+  this.addChatBubble(ShareData.LLMResponseTemp, false);
+  this.flushIfPunctuated();
+}
 
+// 結尾是標點就送 TTS 並清空，準備累積下一段
+flushIfPunctuated()
+{
+  const punctuationPattern = /[。．！？!?.~，,]$/;
+  if (!punctuationPattern.test(ShareData.LLMResponseTemp)) return;
+
+  console.log("執行 TTS => " + ShareData.LLMResponseTemp);
+  ShareData.HasLLMReplyContent = true;
+  this.sendOrQueueTTS(ShareData.LLMResponseTemp);
+  ShareData.LLMResponseTemp = "";
+}
+
+// 送 TTS：忙線中先排隊，否則直接送
+sendOrQueueTTS(content)
+{
+  if (ShareData.TTSIsWaitRequest) {
+    ShareData.TTSTextQueue.push(content);
+  } else {
+    ShareData.TTSIsWaitRequest = true;
+    this.SendToElevenlabs(content);
+  }
 }
 
 DifyByInput()
@@ -1242,19 +1015,7 @@ addChatBubble(text, isUser) {
 
   chatContainer.scrollTop = chatContainer.scrollHeight; 
  
-  // while(/*chatContainer.scrollHeight > chatContainer.clientHeight && */chatContainer.childElementCount > 20)
-  // {
-  //   console.log("超出 20 bubble");
-  //   const firstChild = chatContainer.children[0];
-  //   if(firstChild)
-  //   {
-  //     ShareData.BubblePool.push(firstChild);
-  //     chatContainer.removeChild(firstChild);
-  //   }
-     
-  // }
 
-  // 自動滾動到最底部
 
     
   }
@@ -1330,7 +1091,7 @@ playAudioQueue() {
           
           
       }).catch((err) => {
-          // console.error("播放音檔時發生錯誤:", err);
+          
           ShareData.isPlaying = false;
           this.playAudioQueue();  // 播放下一段
       });
@@ -1343,7 +1104,7 @@ playAudioQueue() {
 
                
             this.ttstimer.start();
-            var inputValue = InputText;
+            let inputValue = InputText;
             inputValue = inputValue.replace(/ROG/g, "R O G");
             inputValue = inputValue.slice(0 , -1);
             if(inputValue == '嗨')
@@ -1365,7 +1126,7 @@ playAudioQueue() {
       const request = {
               "model": "qwen3-tts-vc-2026-01-22",
              "input": {
-                "text": InputText,
+                "text": inputValue,
                 "voice": "qwen-tts-vc-bailian-voice-20260415163944459-a009"
             }
       };
@@ -1384,12 +1145,7 @@ playAudioQueue() {
           if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
           
-        //   // 轉換為 Blob 對象並生成音頻 URL
-        //   const audioBlob = await response.blob();
-        //   const audioUrl = URL.createObjectURL(audioBlob);
 
-        //   // 5. 將音檔 URL 存入佇列中
-        //   ShareData.AudioQueue.push(audioUrl);
 
           const result = await response.json();
           const audioUrl = result.output.audio.url.replace('http://', 'https://');
@@ -1411,10 +1167,7 @@ playAudioQueue() {
 
 
 
-          // // 設置音頻播放器
-          // const audioPlayer = document.getElementById("audioPlayer");
-          // audioPlayer.src = audioUrl;
-          // audioPlayer.play();
+
       } catch (error) {
           if (error.name === 'AbortError') {
               console.log("FishAudio 請求已中斷，但不顯示錯誤訊息");
@@ -1485,7 +1238,7 @@ OnGetMedaiStream(stream)
             {
                 const barHeight = dataArray[i];
                 const scaledHeight = barHeight * 0.7;
-                displayHeights[i] = displayHeights[i];
+            
 
                 ctx.fillStyle = 'rgba(240, 37, 37, 1)';
 
