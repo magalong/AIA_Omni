@@ -6,12 +6,11 @@ const BG_9_16 = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/background/BG_
 
 // 本地測試：影片放在 public/，Vite 會以根路徑 / 服務（正式再換回 CDN/OSS 網址）
 const mainVideoFile = "https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/video/ROG_OMNI_Video.webm";
-const mainVideoFileforios = "https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/video/ROG_OMNI_Video.webm";
+const mainVideoFileforios = "https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/video/ROG_OMNI_Video.mp4";
 // 依照平台選取影片檔案
 function isIOS(): boolean {
-    // const userAgent = window.navigator.userAgent.toLowerCase();
-    // return /iphone|ipad|ipod/.test(userAgent);
-    return false;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
 }
 
 
