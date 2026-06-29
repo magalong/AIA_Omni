@@ -23,6 +23,30 @@ app.use(
   }),
 );
 
+// 安全 HTTP headers：套用在所有回應（含 serveStatic 發出的前端 HTML）
+// 補齊 CSP 無 fallback 的指令（base-uri / form-action / frame-ancestors），
+// 並放行實際用到的外部來源（OSS 圖、Google Fonts、R2 影片）
+const CSP = [
+  "default-src 'none'",
+  "script-src 'self' blob:",
+  "style-src 'self'",
+  "font-src 'self'",
+  "img-src 'self' data: https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com",
+  "media-src 'self' https://*.aliyuncs.com https://syntrend-html-omni.moonshine-studio.net",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+].join('; ');
+
+app.use('*', async (c, next) => {
+  await next();
+  c.header('Content-Security-Policy', CSP);
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('Referrer-Policy', 'no-referrer');
+  c.header('X-Frame-Options', 'DENY');
+});
+
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
 app.route('/tts', tts);

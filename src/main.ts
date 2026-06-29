@@ -1,4 +1,5 @@
 import './style.css';
+import '@fontsource/roboto-condensed/400.css';
 // @ts-ignore
 import {ShareData , Coordinator} from './Coordinator.js';
 const push_black = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/icon/icon_push_black_red.png';
@@ -360,7 +361,8 @@ document.addEventListener('keydown', function(event: KeyboardEvent) {
         if (DebugContainer) 
         {
             // 檢查當前 display 屬性
-            const isHidden: boolean = DebugContainer.style.display === 'none';
+            // 用 computed style 判斷，因初始的 display:none 已移到 CSS（inline style 已移除）
+            const isHidden: boolean = getComputedStyle(DebugContainer).display === 'none';
             DebugContainer.style.display = isHidden ? 'block' : 'none';
         } 
         else 

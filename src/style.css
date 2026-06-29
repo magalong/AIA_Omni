@@ -18,6 +18,12 @@
             font-family: 'Courier New', Courier, monospace; /* 使用等寬字體顯示時間更整齊 */
         }
 
+/* 從 index.html 搬出的 inline style（以便移除 CSP style-src 的 'unsafe-inline'） */
+#logo { width: 99px; }
+#loading-bar { width: 120px; }
+#status-container { display: none; }
+#app { display: none; }
+
 @media (orientation: landscape) {
   /* 這裡寫 16:9 橫向時的樣式 */
 
