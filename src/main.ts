@@ -116,7 +116,7 @@ if (StartBtn) {
         }
 
 
-
+        _Coordinator.Dify("你好嗎");
         
     });
 }
