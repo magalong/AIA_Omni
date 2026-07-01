@@ -5,9 +5,13 @@ import { env } from '../env.js';
 
 const ASR_PATH = '/asr';
 
-function isOriginAllowed(origin: string | undefined): boolean {
+function isOriginAllowed(origin: string | undefined, host: string | undefined): boolean {
   if (env.WS_ALLOWED_ORIGINS.includes('*')) return true;
   if (!origin) return false;
+  // 同源自動放行：origin 的 host 與請求的 Host 相同（前後端同源部署不需額外設白名單）
+  try {
+    if (host && new URL(origin).host === host) return true;
+  } catch {}
   return env.WS_ALLOWED_ORIGINS.includes(origin);
 }
 
@@ -26,7 +30,7 @@ function handleUpgrade(
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
   if (url.pathname !== ASR_PATH) return; // 非 /asr，交給其他 handler
 
-  if (!isOriginAllowed(req.headers.origin)) {
+  if (!isOriginAllowed(req.headers.origin, req.headers.host)) {
     console.warn(`[asr-ws] 拒絕來源: ${req.headers.origin}`);
     return rejectUpgrade(socket, '403 Forbidden');
   }

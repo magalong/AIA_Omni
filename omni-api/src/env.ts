@@ -6,13 +6,15 @@ function required(name: string): string {
 
 const PORT = Number(process.env.PORT ?? 8080);
 
-const CORS_ORIGINS = (process.env.CORS_ORIGINS ?? '*')
+// 預設空白：沒設環境變數時「不放行任何跨域」，避免正式環境誤帶 ACAO: *
+// （前端與 API 同源，本來就不需要 CORS；要開放跨域再透過 CORS_ORIGINS 明確指定）
+const CORS_ORIGINS = (process.env.CORS_ORIGINS ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
 
-// WebSocket 來源白名單；填 * 表示不檢查（僅開發用）
-const WS_ALLOWED_ORIGINS = (process.env.WS_ALLOWED_ORIGINS ?? '*')
+// WebSocket 來源白名單；預設空白＝只允許同源（填 * 才是不檢查，僅開發用）
+const WS_ALLOWED_ORIGINS = (process.env.WS_ALLOWED_ORIGINS ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
