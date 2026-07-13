@@ -1,8 +1,6 @@
 // 圖片用字串常數（不要用 import URL，否則會被當成 ES module 載入而觸發 CORS）
 const BG_16_9 = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/background/BG_16_9.jpg';
 const BG_9_16 = 'https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/background/BG_9_16.jpg';
-//import mainVideoFile from './assets/video/ROG_OMNI_Video.webm';
-//import mainVideoFile from 'https://syntrend-html-omni-test.moonshine-studio.net/ROG_OMNI_Video.webm';
 
 // 本地測試：影片放在 public/，Vite 會以根路徑 / 服務（正式再換回 CDN/OSS 網址）
 const mainVideoFile = "https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com/video/ROG_OMNI_Video.webm";
