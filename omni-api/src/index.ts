@@ -32,7 +32,7 @@ const CSP = [
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data: https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com",
-  "media-src 'self' https://*.aliyuncs.com https://syntrend-html-omni.moonshine-studio.net",
+  "media-src 'self' https://*.aliyuncs.com",
   "connect-src 'self'",
   "base-uri 'none'",
   "form-action 'none'",
@@ -61,7 +61,7 @@ app.use('/*', serveStatic({ root: './public' }));
 app.use('/*', serveStatic({ root: './public', path: 'index.html' }));
 
 const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
-  console.log(`omni-api listening on http://0.0.0.0:${info.port}`);
+  //console.log(`omni-api listening on http://0.0.0.0:${info.port}`);
 });
 
 // 掛載 DashScope ASR WebSocket 代理於 /asr

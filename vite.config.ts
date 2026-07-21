@@ -10,7 +10,7 @@ function buildCsp(allowInlineStyle: boolean) {
     `style-src 'self'${allowInlineStyle ? " 'unsafe-inline'" : ''}`,
     "font-src 'self'",
     "img-src 'self' data: https://aia-ai-omni.oss-cn-shanghai.aliyuncs.com",
-    "media-src 'self' https://*.aliyuncs.com https://syntrend-html-omni.moonshine-studio.net",
+    "media-src 'self' https://*.aliyuncs.com",
     "connect-src 'self'",
     "base-uri 'none'",
     "form-action 'none'",

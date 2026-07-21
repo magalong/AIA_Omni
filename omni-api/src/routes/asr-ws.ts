@@ -98,11 +98,12 @@ function setupRelay(client: WebSocket, upstream: WebSocket, touch: () => void): 
 }
 
 // 心跳：偵測殭屍連線
-function startHeartbeat(client: WebSocket, touch: () => void, closeAll: Closer): void {
+function startHeartbeat(client: WebSocket, closeAll: Closer): void {
   let alive = true;
+  // 只標記存活，不呼叫 touch()：pong 是心跳的自動回覆，不代表連線有實際活動。
+  // 若在此 touch()，lastActivity 會被每 30 秒的心跳持續刷新，閒置逾時將永遠不觸發。
   client.on('pong', () => {
     alive = true;
-    touch();
   });
 
   const timer = setInterval(() => {
@@ -161,7 +162,7 @@ function handleConnection(client: WebSocket): void {
 
   const closeAll = createCloser(client, upstream);
   setupRelay(client, upstream, touch);
-  startHeartbeat(client, touch, closeAll);
+  startHeartbeat(client, closeAll);
   startIdleCheck(() => lastActivity, closeAll);
   setupTermination(client, upstream, closeAll);
 }

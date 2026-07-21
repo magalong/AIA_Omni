@@ -291,57 +291,7 @@ stopRecognition()
 }
 
 
- async sendToAzure(data) {
 
-
-  const arrayBuffer = await data.arrayBuffer();
-
-
-
-  // 重新建立 AbortController
-  ShareData.STTAbortController = new AbortController();
-  const signal = ShareData.STTAbortController.signal;
-  
-
-try{
-
-const response = await fetch(`https://omni-api.rd-02f.workers.dev/azure`, {
-  method: "POST",
-  headers: {
-      "Content-Type": "audio/wav"
-  },
-  body: arrayBuffer,
-  signal :signal
-});
-
-
-try
-{
-
-  const result = await response.json();
-
-  console.log("Azure STT : " + JSON.stringify(result, null, 2));
-
-  Dify(result.DisplayText);
-
-
-}
-catch(e)
-{
-
-  console.log("Azure STT Recongnize failed" + e );
-
-}
-}
-catch (error) {
-      if (error.name === 'AbortError') {
-          console.log("Azure STT 請求已中斷，但不顯示錯誤訊息");
-          return; // 靜默處理，不執行 alert
-      }
-      alert("request error " + error.message); // 其他錯誤才顯示
-  }
-
-}
 
 
 async startMicrophone() {
