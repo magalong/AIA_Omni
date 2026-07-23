@@ -244,7 +244,7 @@ export class SimpleVideoPlayer {
 
         //輪播隨機播放
         this.currentAnimationKey = key;
-        const randomIndex = Math.floor(Math.random() * animations.length);
+        const randomIndex = crypto.getRandomValues(new Uint32Array(1))[0] % animations.length;
         this.currentAnimationIndex = randomIndex;
         const targetName = animations[randomIndex];
         const segment = this.videoSegments[targetName];

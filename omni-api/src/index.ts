@@ -42,6 +42,7 @@ const CSP = [
 app.use('*', async (c, next) => {
   await next();
   c.header('Content-Security-Policy', CSP);
+  c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   c.header('X-Content-Type-Options', 'nosniff');
   c.header('Referrer-Policy', 'no-referrer');
   c.header('X-Frame-Options', 'DENY');
@@ -61,7 +62,7 @@ app.use('/*', serveStatic({ root: './public' }));
 app.use('/*', serveStatic({ root: './public', path: 'index.html' }));
 
 const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
-  //console.log(`omni-api listening on http://0.0.0.0:${info.port}`);
+  console.log(`omni-api listening on http://0.0.0.0:${info.port}`);
 });
 
 // 掛載 DashScope ASR WebSocket 代理於 /asr
