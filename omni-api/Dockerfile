@@ -19,6 +19,10 @@ RUN npm run build && npm prune --omit=dev
 
 # --- 3. 最終 image ---
 FROM node:20-alpine AS runner
+# 更新 base image 系統套件（修補 openssl 等 OS 層 CVE）；
+# 移除執行時用不到的 npm/npx（App 以 `node dist/index.js` 啟動），縮小攻擊面
+RUN apk upgrade --no-cache \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
