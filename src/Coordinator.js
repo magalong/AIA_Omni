@@ -1097,7 +1097,20 @@ playAudioQueue() {
           
 
 
-          const result = await response.json();
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let text = '';
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            text += decoder.decode(value, { stream: true });
+          }
+          text += decoder.decode();
+          const result = JSON.parse(text);
+
+
+
+
           const audioUrl = result.output.audio.url.replace('http://', 'https://');
           ShareData.AudioQueue.push(audioUrl);
 
