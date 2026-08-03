@@ -1,27 +1,26 @@
 trigger:
-- main
+  branches:
+    include:
+    - main
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+- stage: __default
+  jobs:
+  - job: Job
+    pool:
+      vmImage: 'windows-latest'   # 建議搭配 windows-latest，可避開 Agent 版本 Demand 錯誤
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: 'Install Node.js'
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
-
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
-
-# 建議調整為正確帶入連線或參數的 Task 設定
-- task: WhiteSource@21
-  inputs:
-    cwd: '$(System.DefaultWorkingDirectory)'
-    # 如果是用 Service Connection，通常需加上：
-    # connection: 'Your-Mend-Service-Connection-Name'
-    # 如果是用 API Key 形式，通常需帶上：
-    # wssUserKey: '$(MEND_USER_KEY)'
-    # projectName: '$(Build.Repository.Name)'
-  displayName: 'Run Mend Security Scan'
+    - task: CmdLine@2
+      displayName: 'npm install and build'
+      inputs:
+        script: |
+          npm install
+          npm run build
+    - task: WhiteSource@21
+      inputs:
+        cwd: '$(System.DefaultWorkingDirectory)'
