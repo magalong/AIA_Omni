@@ -14,5 +14,6 @@ steps:
     npm install
   displayName: 'npm install'
 
-- task: WhiteSourceBolt@20
-  displayName: 'Run Mend Bolt Security Scan'
+- task: WhiteSource@21
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
