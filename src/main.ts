@@ -13,6 +13,9 @@ let micStream: MediaStream | null = null;
 //麥克風權限狀態
 let IsMicAllow = false;
 
+//麥克風權限請求中：首次請求期間忽略空白鍵，直到取得結果（成功或失敗）
+let IsMicRequesting = false;
+
 //麥克風是否正在收音
 let IsMicRecording:boolean = false;
 
@@ -124,9 +127,11 @@ if (StartBtn) {
 //按下/放開 收音處理
 function HandleRecording(IsStartRecord : boolean)
 {
-    
+    // 權限請求進行中：忽略所有空白鍵/按鈕觸發，直到取得結果
+    //（避免「按一下觸發權限 → 授權後又自動開始說話」）
+    if(IsMicRequesting) return;
 
-    const CheckRecord = function() 
+    const CheckRecord = function()
     {
 
 
@@ -178,35 +183,37 @@ function HandleRecording(IsStartRecord : boolean)
 
     if(!IsMicAllow && IsStartRecord)
     {
-        
+        // 進入權限請求狀態；期間的空白鍵觸發都會被上面的 IsMicRequesting 擋掉。
+        // 取得權限後「只解除請求鎖、不自動開始錄音」，使用者需再按一次才開始說話。
+        IsMicRequesting = true;
+        const finishRequest = () => { IsMicRequesting = false; };
+
         navigator.permissions.query({ name: "microphone" as PermissionName })
-        
-        .then((result) => 
+        .then((result) =>
         {
-      
             if (result.state === "granted")
             {
                 console.log("麥克風權限 已允許");
-                SetupMediaStream(CheckRecord);   // 串流就緒後才 IsMicAllow=true + CheckRecord
+                SetupMediaStream(finishRequest);
             }
             else if (result.state === "prompt")
             {
                 console.log("麥克風權限 請求中");
                 WaveformCanvas.style.display = 'none';
-                SetupMediaStream(CheckRecord);   // getUserMedia 會跳權限視窗，允許後才開始錄音
+                SetupMediaStream(finishRequest);
             }
-            else if (result.state === "denied") 
+            else // denied
             {
                 console.log("麥克風權限 已被拒絕");
+                finishRequest();
             }
-        });
-
-        
+        })
+        .catch(finishRequest); // 查詢失敗也要解除請求鎖，避免永遠卡住
     }
     else
     {
         CheckRecord();
-              
+
     }
         
 
@@ -216,15 +223,15 @@ function HandleRecording(IsStartRecord : boolean)
     
 }
 
-//檢查麥克風權限；onReady 於串流就緒後呼叫（由呼叫端傳入 CheckRecord）
-function SetupMediaStream(onReady: () => void)
+//取得麥克風串流；onComplete 於權限流程結束（成功或失敗）後呼叫，用來解除請求鎖
+function SetupMediaStream(onComplete: () => void)
 {
 
     if(micStream != null)
     {
-        // 已有串流：直接視為就緒，開始錄音
+        // 已有串流：直接視為就緒
         IsMicAllow = true;
-        onReady();
+        onComplete();
         return;
     }
 
@@ -255,13 +262,13 @@ function SetupMediaStream(onReady: () => void)
             micStream = stream;
             _Coordinator.OnGetMedaiStream(stream);
 
-            // 權限真正拿到、串流就緒後才標記允許並開始錄音
-            // 首次 prompt 允許後也走這裡，不必再重整網頁
+            // 權限真正拿到、串流就緒 → 標記允許（下一次按鍵即可錄音，不必重整）
             IsMicAllow = true;
-            onReady();
+            onComplete();
         })
         .catch((err: DOMException) => {
           console.error("無法取得麥克風：", err);
+          onComplete(); // 失敗也要解除請求鎖，否則之後的空白鍵永遠被忽略
         });
 
 

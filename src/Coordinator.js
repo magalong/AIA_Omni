@@ -375,21 +375,24 @@ arrayBufferToBase64(buffer) {
 
 stopASR() {
 
-  if (this.asrWs && this.asrWs.readyState === WebSocket.OPEN) {
-    
-    console.log("Close Old WebSocket");
+  if (this.asrWs) {
 
-    if(this.asrSessionReady)
+    if (this.asrWs.readyState === WebSocket.OPEN && this.asrSessionReady)
     {
+        // 已連上且 session 就緒：正常送 session.finish 收尾
+        console.log("Close Old WebSocket");
         this.asrWs.send(JSON.stringify({
         event_id: 'evt_' + Date.now(),
         type: 'session.finish'
         }));
-        
+
         this.asrSessionReady = false;
     }
     else
     {
+        // 尚在連線中(CONNECTING)或已連上但 session 還沒就緒：直接中止。
+        // 涵蓋「按下立刻放開」——連線還沒 OPEN 就被要求停止；
+        // close() 會觸發 onclose → finishAsrSession，重置 IsSTTProcessing，避免卡死。
         this.asrWs.close();
         this.asrWs = null;
     }
