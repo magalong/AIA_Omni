@@ -187,13 +187,13 @@ function HandleRecording(IsStartRecord : boolean)
             if (result.state === "granted")
             {
                 console.log("麥克風權限 已允許");
-                SetupMediaStream();   // 串流就緒後才 IsMicAllow=true + CheckRecord
+                SetupMediaStream(CheckRecord);   // 串流就緒後才 IsMicAllow=true + CheckRecord
             }
             else if (result.state === "prompt")
             {
                 console.log("麥克風權限 請求中");
                 WaveformCanvas.style.display = 'none';
-                SetupMediaStream();   // getUserMedia 會跳權限視窗，允許後才開始錄音
+                SetupMediaStream(CheckRecord);   // getUserMedia 會跳權限視窗，允許後才開始錄音
             }
             else if (result.state === "denied") 
             {
@@ -216,15 +216,15 @@ function HandleRecording(IsStartRecord : boolean)
     
 }
 
-//檢查麥克風權限
-function SetupMediaStream() 
+//檢查麥克風權限；onReady 於串流就緒後呼叫（由呼叫端傳入 CheckRecord）
+function SetupMediaStream(onReady: () => void)
 {
 
     if(micStream != null)
     {
         // 已有串流：直接視為就緒，開始錄音
         IsMicAllow = true;
-        CheckRecord();
+        onReady();
         return;
     }
 
@@ -258,7 +258,7 @@ function SetupMediaStream()
             // 權限真正拿到、串流就緒後才標記允許並開始錄音
             // 首次 prompt 允許後也走這裡，不必再重整網頁
             IsMicAllow = true;
-            CheckRecord();
+            onReady();
         })
         .catch((err: DOMException) => {
           console.error("無法取得麥克風：", err);
