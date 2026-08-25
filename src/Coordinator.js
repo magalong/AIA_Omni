@@ -492,6 +492,7 @@ ResetForNewDifyRequest()
   ShareData.LLMResponseTemp = "";
   ShareData.IsLLMContent = false;
   ShareData.audioElement.pause();
+  ShareData.audioElement.onended = null; // 中斷時清掉殘留 onended，避免收尾瞬間被中斷後又觸發 playAudioQueue → IDLE
   ShareData.AudioQueue = [];
   ShareData.isPlaying = false;
   clearInterval(ShareData.AIBubbleInterval);
@@ -1011,9 +1012,15 @@ const chatContainer = document.getElementById("chat-container");
 
 //#region PlayAudio
 playAudioQueue() {
-      if (ShareData.isPlaying || ShareData.AudioQueue.length === 0) 
+      if (ShareData.isPlaying || ShareData.AudioQueue.length === 0)
       {
-        if(ShareData.TTSTextQueue.length === 0)
+        // 只有「沒在播放 + 音檔佇列空 + 沒有待轉文字 + 沒有 TTS 請求進行中」才真的回 IDLE。
+        // 加上 !TTSIsWaitRequest，涵蓋多段 TTS 之間「文字已取出、音檔還沒回來」的空窗，
+        // 避免上一段播完就提早回 IDLE，正確的行為是等整串 TTS 播完才回。
+        if(!ShareData.isPlaying
+           && ShareData.AudioQueue.length === 0
+           && ShareData.TTSTextQueue.length === 0
+           && !ShareData.TTSIsWaitRequest)
         {
           this.videoPlayer.setVideoByKey("IdleStand");
 

@@ -184,21 +184,17 @@ function HandleRecording(IsStartRecord : boolean)
         .then((result) => 
         {
       
-            if (result.state === "granted") 
+            if (result.state === "granted")
             {
                 console.log("麥克風權限 已允許");
-                SetupMediaStream();
-                IsMicAllow = true;
-                CheckRecord();
-
-            } 
-            else if (result.state === "prompt") 
+                SetupMediaStream();   // 串流就緒後才 IsMicAllow=true + CheckRecord
+            }
+            else if (result.state === "prompt")
             {
                 console.log("麥克風權限 請求中");
-                SetupMediaStream();
                 WaveformCanvas.style.display = 'none';
-                CheckRecord();
-            } 
+                SetupMediaStream();   // getUserMedia 會跳權限視窗，允許後才開始錄音
+            }
             else if (result.state === "denied") 
             {
                 console.log("麥克風權限 已被拒絕");
@@ -226,6 +222,9 @@ function SetupMediaStream()
 
     if(micStream != null)
     {
+        // 已有串流：直接視為就緒，開始錄音
+        IsMicAllow = true;
+        CheckRecord();
         return;
     }
 
@@ -255,9 +254,11 @@ function SetupMediaStream()
             console.log("取得音訊串流", stream);
             micStream = stream;
             _Coordinator.OnGetMedaiStream(stream);
-            
-         
 
+            // 權限真正拿到、串流就緒後才標記允許並開始錄音
+            // 首次 prompt 允許後也走這裡，不必再重整網頁
+            IsMicAllow = true;
+            CheckRecord();
         })
         .catch((err: DOMException) => {
           console.error("無法取得麥克風：", err);

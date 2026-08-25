@@ -123,88 +123,64 @@ export class SimpleVideoPlayer {
         const loadingText = document.getElementById('loading-progress') as HTMLParagraphElement;
 
 
-        //設定正在載入影片
+        //要載入的主影片（所有動作都在這一支大檔裡，用時間軸切換）
         const Video = isIOS() ? mainVideoFileforios : mainVideoFile;
 
-        //統計總載入影片數量
-        const totalAssets =  Video.length;
+        //更新進度條與文字（0~100）
+        const setProgress = (percent: number) => {
+            const p = Math.max(0, Math.min(100, Math.floor(percent)));
+            if (loadingBar) loadingBar.value = p;
+            if (loadingText) loadingText.textContent = `Loading... ${p}%`;
+        };
 
-        //目前所載入的數量
-        let loadedAssets = 0;
-    
-
-        //更新Loading Screen (Arrow Function)
-        const updateLoadingScreen = () => 
-        {
-            const progressPercent = Math.floor((loadedAssets / totalAssets) * 100);
-    
-            if (loadingBar) loadingBar.value = progressPercent;
-            if (loadingText) loadingText.textContent = `Loading... ${progressPercent}%`;
-    
-            if (loadedAssets >= totalAssets) {
-                const loadingScreen = document.getElementById('loading-screen');
-                const app = document.getElementById('app');
-                if (loadingScreen && app) {
-                    loadingScreen.style.display = 'none';
-                    app.style.display = 'block';
-                }
+        //關閉 loading 畫面、顯示主畫面
+        const hideLoadingScreen = () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const app = document.getElementById('app');
+            if (loadingScreen && app) {
+                loadingScreen.style.display = 'none';
+                app.style.display = 'block';
             }
         };
-    
-    
-        //檢查影片載入
-        const LoadVideo = (src: string): Promise<void> => {
-            return new Promise((resolve) => {
-             
-                let resolved = false;
-               
-                const cleanup = () => {
-                    
-                    if (!resolved) {
-                        console.log("影片載入完成!");
-                        resolved = true;
-                        loadedAssets++;
-                        updateLoadingScreen();
-                        resolve();
-                    }
-                };
-                 const cleanupwhenerror = () => {
-          
-                    if (!resolved) {
-                        resolved = true;
-                        loadedAssets++;
-                        updateLoadingScreen();
-                        resolve();
-                    }
-                };
 
+        //以「已緩衝時間 / 影片總長度」計算下載進度，做出真正漸進的 loading 效果
+        await new Promise<void>((resolve) => {
+            let done = false;
 
+            const finish = () => {
+                if (done) return;
+                done = true;
+                setProgress(100);
+                hideLoadingScreen();
+                resolve();
+            };
 
-                this.videoElement.addEventListener('canplaythrough', cleanup);
-                this.videoElement.addEventListener('error', cleanupwhenerror);
+            const onProgress = () => {
+                const v = this.videoElement;
+                if (v.duration > 0 && v.buffered.length > 0) {
+                    // 用最後一段緩衝的結尾位置估算下載百分比
+                    setProgress((v.buffered.end(v.buffered.length - 1) / v.duration) * 100);
+                }
+            };
 
-                // fallback 避免永遠卡住
-                //5秒後影片沒有loading完畢一樣關閉loading 介面
-                setTimeout(() => {
-                     
-                    if (!resolved) {
-                        console.warn(`Timeout while loading video: ${src}`);
-                        cleanup();
-                    }
-                }, 5000);
+            // progress：下載到新資料時觸發，用來漸進更新進度條
+            this.videoElement.addEventListener('progress', onProgress);
+            this.videoElement.addEventListener('loadedmetadata', onProgress);
+            // canplaythrough：已可流暢播放 → 視為載入完成
+            this.videoElement.addEventListener('canplaythrough', finish);
+            this.videoElement.addEventListener('error', finish);
 
-                this.videoElement.src = isIOS() ? mainVideoFileforios : mainVideoFile;
-                this.videoElement.load();
-                
-            });
-        };
+            // fallback：5 秒仍未完成也放行，避免永遠卡在 loading
+            setTimeout(() => {
+                if (!done) {
+                    console.warn(`Timeout while loading video: ${Video}`);
+                    finish();
+                }
+            }, 15000);
 
-
-        const VideoLoad = [
-            LoadVideo(Video),
-        ];
-    
-        await Promise.all(VideoLoad);
+            this.videoElement.src = Video;
+            this.videoElement.load();
+        });
 
         
     }
