@@ -578,7 +578,8 @@ async Dify(InputText) {
   console.log("Dify 送出文字 : " + InputText);
   ShareData.bIsEnglish = this.IsEnglish(InputText);
 
-  const query = InputText + (ShareData.bIsEnglish ? " (按照格式用英文回答)" : " (按照格式用繁體中文回答)");
+  //const query = InputText + (ShareData.bIsEnglish ? " (按照格式用英文回答)" : " (按照格式用繁體中文回答)");
+  const query = InputText + "(按照格式用簡體中文回答)"
 
   // 重新建立 AbortController
   ShareData.GPTAbortController = new AbortController();
