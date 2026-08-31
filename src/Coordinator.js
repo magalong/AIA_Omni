@@ -917,12 +917,6 @@ sendOrQueueTTS(content)
   }
 }
 
-DifyByInput()
-{
-  Dify(document.getElementById("myInput").value);
-}
-
-
 addChatBubble(text, isUser) {
 
   const chatContainer = document.getElementById("chat-container");
@@ -999,16 +993,6 @@ addChatBubble(text, isUser) {
 
   }
 
-clearChatBubbles() {
-const chatContainer = document.getElementById("chat-container");
-
-  while (chatContainer.firstChild) {
-      chatContainer.removeChild(chatContainer.firstChild);
-  }
-
-
-  ShareData.IsNewAIBubble = true; // 重置 AI 氣泡狀態
-}
 //#endregion
 
 
@@ -1066,7 +1050,9 @@ playAudioQueue() {
                
             this.ttstimer.start();
             let inputValue = InputText;
-            inputValue = inputValue.replace(/ROG/g, "R O G");
+            // 不分大小寫，把獨立的 rog/ROG 拆成 "R O G" 讓 TTS 逐字唸；
+            // \b 單字邊界避免誤傷 program、progress、frog 等含 "rog" 的字
+            inputValue = inputValue.replace(/\brog\b/gi, "R O G");
             inputValue = inputValue.slice(0 , -1);
             if(inputValue == '嗨')
             {
