@@ -1067,7 +1067,6 @@ playAudioQueue() {
       ShareData.TTSAbortController = new AbortController();
       const signal = ShareData.TTSAbortController.signal;
 
-
       const API_URL = '/tts';
 
       const request = {
