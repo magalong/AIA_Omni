@@ -75,21 +75,11 @@ export class ShareData
   //STT Abort
   static STTAbortController = new AbortController(); // 建立全局的 AbortController
 
-  //Azure SDK 是否載入完成
-  static IsAzureSTTSDKSetupDone = false;
-
-  //Azure STT變數
-  static AzureRecognizer;
-
-  //Azure 辨識出來的文字
+  //辨識出來的文字
   static STTString = "";
 
-  //Azure STT 是否在處理中
+  //STT 是否在處理中
   static IsSTTProcessing = false;
-
-  //Token 時間戳記
-  static TokenTimestamp = 0;
-
 
   //TTS
 
@@ -681,7 +671,7 @@ handleDifyMessageEnd() {
     }
     ShareData.IsNewAIBubble = true;
     this.addChatBubble(text, false);
-    this.SendToElevenlabs(text);
+    this.SendTTS(text);
     return;
   }
 
@@ -694,7 +684,7 @@ handleDifyMessageEnd() {
     const text = this.fallbackReply();
     ShareData.IsNewAIBubble = true;
     this.addChatBubble(text, false);
-    this.SendToElevenlabs(text);
+    this.SendTTS(text);
   }
 }
 
@@ -913,7 +903,7 @@ sendOrQueueTTS(content)
     ShareData.TTSTextQueue.push(content);
   } else {
     ShareData.TTSIsWaitRequest = true;
-    this.SendToElevenlabs(content);
+    this.SendTTS(content);
   }
 }
 
@@ -1045,7 +1035,7 @@ playAudioQueue() {
 //#region TTS
 
 
-  async SendToElevenlabs(InputText) {
+  async SendTTS(InputText) {
 
                
             this.ttstimer.start();
@@ -1119,7 +1109,7 @@ playAudioQueue() {
           }
 
           if (ShareData.TTSTextQueue.length > 0) {
-                this.SendToElevenlabs(ShareData.TTSTextQueue.shift());
+                this.SendTTS(ShareData.TTSTextQueue.shift());
           }
           else
             ShareData.TTSIsWaitRequest = false;
