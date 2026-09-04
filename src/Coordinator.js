@@ -1042,7 +1042,7 @@ playAudioQueue() {
             let inputValue = InputText;
             // 不分大小寫，把獨立的 rog/ROG 拆成 "R O G" 讓 TTS 逐字唸；
             // \b 單字邊界避免誤傷 program、progress、frog 等含 "rog" 的字
-            inputValue = inputValue.replace(/\brog\b/gi, "R O G");
+            inputValue = inputValue.replace(/\brog\b/gi, " R O G ");
             inputValue = inputValue.slice(0 , -1);
             if(inputValue == '嗨')
             {

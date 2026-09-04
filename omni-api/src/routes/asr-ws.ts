@@ -6,13 +6,12 @@ import { env } from '../env.js';
 const ASR_PATH = '/asr';
 
 function isOriginAllowed(origin: string | undefined, host: string | undefined): boolean {
-  if (env.WS_ALLOWED_ORIGINS.includes('*')) return true;
   if (!origin) return false;
-  // 同源自動放行：origin 的 host 與請求的 Host 相同（前後端同源部署不需額外設白名單）
+  // 僅允許同源：origin 的 host 與請求的 Host 相同（前後端同源部署）
   try {
     if (host && new URL(origin).host === host) return true;
   } catch {}
-  return env.WS_ALLOWED_ORIGINS.includes(origin);
+  return false;
 }
 
 function rejectUpgrade(socket: Duplex, statusLine: string): void {

@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { env } from '../env.js';
 
+// Dify chat-messages 端點（雲端版）
+const DIFY_URL = 'https://api.dify.ai/v1/chat-messages';
+
 const dify = new Hono();
 
 // 轉發 Dify chat-messages（streaming SSE）。前端只送 body，金鑰由後端補上。
@@ -11,7 +14,7 @@ dify.post('/', async (c) => {
 
   const body = await c.req.json();
 
-  const upstream = await fetch(env.DIFY_API_URL, {
+  const upstream = await fetch(DIFY_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${env.DIFY_API_KEY}`,

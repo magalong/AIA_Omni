@@ -2,7 +2,6 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { env } from './env.js';
 import { attachAsrWs } from './routes/asr-ws.js';
@@ -13,15 +12,7 @@ const app = new Hono();
 
 app.use('*', logger());
 
-app.use(
-  '*',
-  cors({
-    origin: env.CORS_ORIGINS.includes('*') ? '*' : env.CORS_ORIGINS,
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    maxAge: 86400,
-  }),
-);
+// 前端與 API 同源，不需要 CORS；跨域請求由瀏覽器同源政策擋下。
 
 // 安全 HTTP headers：套用在所有回應（含 serveStatic 發出的前端 HTML）
 // 補齊 CSP 無 fallback 的指令（base-uri / form-action / frame-ancestors），
